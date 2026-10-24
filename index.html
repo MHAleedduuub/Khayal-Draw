@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#151121">
+  <title>Khayal Studio Draw</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-icon">KS</span>
+      <span>Khayal Studio <small>DRAW</small></span>
+    </a>
+    <div class="top-actions">
+      <button id="undoBtn" class="small-btn" title="Undo">↶</button>
+      <button id="redoBtn" class="small-btn" title="Redo">↷</button>
+      <button id="newBtn" class="small-btn">＋ <span data-i18n="new">جديد</span></button>
+      <button id="saveProjectBtn" class="small-btn">💾 <span data-i18n="save">حفظ المشروع</span></button>
+      <button id="exportBtn" class="primary-btn">↓ <span data-i18n="export">تصدير PNG</span></button>
+    </div>
+  </header>
+
+  <main class="app-layout">
+    <aside class="tools-panel panel">
+      <div class="panel-title" data-i18n="tools">أدوات الرسم</div>
+      <div class="tools-grid">
+        <button class="tool active" data-tool="brush" title="Brush">✎<span data-i18n="brush">فرشاة</span></button>
+        <button class="tool" data-tool="eraser" title="Eraser">▱<span data-i18n="eraser">ممحاة</span></button>
+        <button class="tool" data-tool="line" title="Line">／<span data-i18n="line">خط</span></button>
+        <button class="tool" data-tool="rect" title="Rectangle">□<span data-i18n="rect">مستطيل</span></button>
+        <button class="tool" data-tool="ellipse" title="Ellipse">○<span data-i18n="ellipse">دائرة</span></button>
+        <button class="tool" data-tool="text" title="Text">T<span data-i18n="text">نص</span></button>
+        <button class="tool" data-tool="hand" title="Pan">✋<span data-i18n="hand">تحريك</span></button>
+      </div>
+
+      <div class="divider"></div>
+
+      <label class="control-label" for="colorPicker" data-i18n="color">اللون</label>
+      <input id="colorPicker" class="color-input" type="color" value="#9b7bff">
+
+      <div class="preset-colors" aria-label="Colors">
+        <button data-color="#ffffff" style="--swatch:#ffffff" aria-label="White"></button>
+        <button data-color="#111111" style="--swatch:#111111" aria-label="Black"></button>
+        <button data-color="#9b7bff" style="--swatch:#9b7bff" aria-label="Purple"></button>
+        <button data-color="#00d4ff" style="--swatch:#00d4ff" aria-label="Cyan"></button>
+        <button data-color="#ff4fa3" style="--swatch:#ff4fa3" aria-label="Pink"></button>
+        <button data-color="#ffcc55" style="--swatch:#ffcc55" aria-label="Yellow"></button>
+        <button data-color="#45d483" style="--swatch:#45d483" aria-label="Green"></button>
+        <button data-color="#ff635e" style="--swatch:#ff635e" aria-label="Red"></button>
+      </div>
+
+      <label class="control-label" for="sizeRange"><span data-i18n="size">حجم الفرشاة</span> <output id="sizeValue">8</output>px</label>
+      <input id="sizeRange" type="range" min="1" max="80" value="8">
+
+      <label class="control-label" for="opacityRange"><span data-i18n="opacity">الشفافية</span> <output id="opacityValue">100</output>%</label>
+      <input id="opacityRange" type="range" min="1" max="100" value="100">
+
+      <div class="divider"></div>
+
+      <label class="control-label" for="textInput" data-i18n="textContent">محتوى النص</label>
+      <input id="textInput" type="text" maxlength="200" placeholder="اكتب النص هنا">
+
+      <label class="control-label" for="fontSize">Font size <output id="fontSizeValue">32</output>px</label>
+      <input id="fontSize" type="range" min="10" max="120" value="32">
+
+      <div class="divider"></div>
+      <label class="control-label" for="imageInput" data-i18n="addImage">إضافة صورة</label>
+      <input id="imageInput" type="file" accept="image/*">
+
+      <button id="clearLayerBtn" class="danger-btn full-btn" data-i18n="clearLayer">مسح الطبقة الحالية</button>
+    </aside>
+
+    <section class="workspace">
+      <div class="workspace-toolbar">
+        <span id="documentInfo">800 × 600 px</span>
+        <div class="zoom-controls">
+          <button id="zoomOutBtn" aria-label="Zoom out">−</button>
+          <span id="zoomValue">100%</span>
+          <button id="zoomInBtn" aria-label="Zoom in">＋</button>
+          <button id="fitBtn" data-i18n="fit">ملاءمة</button>
+        </div>
+      </div>
+
+      <div id="viewport" class="viewport">
+        <div id="canvasStage" class="canvas-stage"></div>
+      </div>
+
+      <div class="workspace-footer">
+        <span id="status" role="status" aria-live="polite" data-i18n="ready">جاهز للرسم</span>
+        <span data-i18n="hint">ارسم بإصبعك أو بالقلم</span>
+      </div>
+    </section>
+
+    <aside class="layers-panel panel">
+      <div class="layers-heading">
+        <div class="panel-title" data-i18n="layers">الطبقات</div>
+        <button id="addLayerBtn" class="add-layer" title="Add layer">＋</button>
+      </div>
+      <p class="muted" data-i18n="layersHint">كل طبقة مستقلة. اختَر طبقة للرسم عليها.</p>
+      <div id="layersList" class="layers-list"></div>
+
+      <div class="divider"></div>
+      <button id="layerUpBtn" class="secondary-btn full-btn" data-i18n="moveUp">↑ رفع الطبقة</button>
+      <button id="layerDownBtn" class="secondary-btn full-btn" data-i18n="moveDown">↓ خفض الطبقة</button>
+      <button id="deleteLayerBtn" class="danger-btn full-btn" data-i18n="deleteLayer">حذف الطبقة</button>
+
+      <div class="divider"></div>
+      <div class="panel-title" data-i18n="adjustments">تعديلات الصورة</div>
+      <label class="control-label" for="brightnessRange"><span data-i18n="brightness">السطوع</span> <output id="brightnessValue">100</output>%</label>
+      <input id="brightnessRange" type="range" min="20" max="200" value="100">
+      <label class="control-label" for="contrastRange"><span data-i18n="contrast">التباين</span> <output id="contrastValue">100</output>%</label>
+      <input id="contrastRange" type="range" min="20" max="200" value="100">
+      <label class="control-label" for="saturationRange"><span data-i18n="saturation">التشبع</span> <output id="saturationValue">100</output>%</label>
+      <input id="saturationRange" type="range" min="0" max="200" value="100">
+      <button id="resetAdjustmentsBtn" class="secondary-btn full-btn" data-i18n="resetAdjustments">إعادة التعديلات</button>
+
+      <div class="divider"></div>
+      <button id="openProjectBtn" class="secondary-btn full-btn" data-i18n="openProject">فتح مشروع JSON</button>
+      <input id="projectInput" type="file" accept=".json,application/json" hidden>
+    </aside>
+  </main>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-card">
+      <h2 data-i18n="newDocument">مستند جديد</h2>
+      <label class="control-label" for="docWidth" data-i18n="width">العرض</label>
+      <input id="docWidth" type="number" min="100" max="2400" value="800">
+      <label class="control-label" for="docHeight" data-i18n="height">الارتفاع</label>
+      <input id="docHeight" type="number" min="100" max="2400" value="600">
+      <label class="check-row"><input id="transparentBg" type="checkbox" checked> <span data-i18n="transparent">خلفية شفافة</span></label>
+      <div class="modal-actions">
+        <button id="cancelNewBtn" class="secondary-btn" data-i18n="cancel">إلغاء</button>
+        <button id="createNewBtn" class="primary-btn" data-i18n="create">إنشاء</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
